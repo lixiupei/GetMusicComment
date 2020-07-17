@@ -86,6 +86,7 @@ def get_json(url, pm, esk):
     json_text = requests.post(url, headers=header, data=form_data).text
     return json_text
 
+
 # 抓取一首歌的全部评论
 def get_all_comment(url):
     # 存放评论
@@ -119,11 +120,13 @@ def get_all_comment(url):
             likedCount = item['likedCount']  # 点赞总数
             comment_info = str(userID) + u" " + nickname + u" " + comment + u" " + str(likedCount) + "\r\n"
             # save_to_file(comment_info, u"总有一天你会出现在我身边.txt")   # 将数据保存到本地txt文件 为当前路径下
-            save_database(comment,nickname,userID,likedCount)          # 将数据保存到mysql数据库
+            save_database(comment, nickname, userID, likedCount)  # 将数据保存到mysql数据库
 
-#将评论保存数据库
-def save_database(comment,nickname,userID,likedCount):
-    db = pymysql.connect("localhost", "root", "123456", "movie")
+
+# 将评论保存数据库
+def save_database(comment, nickname, userID, likedCount):
+    db = pymysql.connect("localhost", "root", "123456", "movie")  # mysql连接依次为 Ip user password databaseName
+
     cursor = db.cursor()
     sql = "INSERT INTO comment(content,nickname, userId, likedCount)VALUES ('%s', '%s', '%s', '%s')" % \
           (comment, nickname, userID, likedCount)
@@ -136,6 +139,7 @@ def save_database(comment,nickname,userID,likedCount):
         # 发生错误时回滚
         db.rollback()
     db.close()
+
 
 # 将评论写入文本文件
 def save_to_file(list, filename):
