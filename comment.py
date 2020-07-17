@@ -112,6 +112,7 @@ def get_all_comment(url):
         encSecKey = get_rsa(strw)
         json_text = get_json(url, params, encSecKey)
         json_dict = json.loads(json_text)
+        time.sleep(1)
         print(json_text)
         for item in json_dict['comments']:
             comment = item['content']  # 评论内容
@@ -149,7 +150,6 @@ def save_to_file(list, filename):
 
 if __name__ == '__main__':
     start_time = time.time()  # 开始时间
-    time.sleep(0.5)
     get_all_comment(url)
     end_time = time.time()  # 结束时间
     print("程序耗时%f秒." % (end_time - start_time))
