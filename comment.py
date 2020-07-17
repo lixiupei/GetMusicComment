@@ -4,10 +4,12 @@ import time
 
 from Crypto.Cipher import AES
 import base64
+import pymysql
 import codecs
 import requests
 import json
 import unicodedata as unicode
+
 url = 'https://music.163.com/weapi/v1/resource/comments/R_SO_4_1303027499?' \
       'csrf_token='
 header = {
@@ -19,9 +21,9 @@ header = {
 }
 # 设置代理服务器
 proxies = {
-            'http:': 'http://121.232.146.184',
-            'https:': 'https://144.255.48.197'
-        }
+    'http:': 'http://121.232.146.184',
+    'https:': 'https://144.255.48.197'
+}
 # rid 是歌曲的id标志 offset是控制翻页的标志
 # first_param = b'{"rid":"", "offset":"0", "total":"true", "limit":"20", "csrf_token":""}'
 second_param = '010001'
@@ -31,6 +33,7 @@ third_param = '00e0b509f6259df8642dbc35662901477df22677ec152b5ff68ace615bb7b7251
 forth_param = b'0CoJUm6Qyw8W8jud'
 # params 需要第一个和第四个参数 encSecKey需要一个随机的16位字符串和第二个和第三个参数
 strw = 'S' * 16
+
 
 def aesEncrypt(text, key):
     # 偏移量
@@ -49,7 +52,7 @@ def rsaEncrypt(pubkey, text, mouduls):
     text = text[::-1]
     rs = int(codecs.encode(text.encode('utf-8'), 'hex_codec'), 16) ** int(pubkey, 16) % int(mouduls, 16)
     rs = format(rs, 'x').zfill(256)
-    #print(rs)
+    # print(rs)
     return rs
 
 
@@ -58,8 +61,9 @@ def get_params(text):
         first_param = b'{"rid":"", "offset":"0", "total":"true", "limit":"20", "csrf_token":""}'
         params = aesEncrypt(first_param, forth_param)
     else:
-        offset = str((text-1)*20)
-        first_param = b'{"rid":"", "offset":"%b", "total":"false", "limit":"20", "csrf_token":""}' % offset.encode('utf-8')
+        offset = str((text - 1) * 20)
+        first_param = b'{"rid":"", "offset":"%b", "total":"false", "limit":"20", "csrf_token":""}' % offset.encode(
+            'utf-8')
         params = aesEncrypt(first_param, forth_param)
     # print('params的随机值是: ')
     # print(params)
@@ -83,8 +87,6 @@ def get_json(url, pm, esk):
     return json_text
 
 # 抓取一首歌的全部评论
-
-
 def get_all_comment(url):
     # 存放评论
     list_all = []
@@ -103,6 +105,7 @@ def get_all_comment(url):
         page = int(comments_num / 20) + 1
     print("共有%d条评论!" % comments_num)  # 全部评论总数
     print("共有%d页评论!" % page)
+
     for i in range(page):  # 逐页抓取
         params = get_params(i + 1)
         encSecKey = get_rsa(strw)
@@ -115,17 +118,33 @@ def get_all_comment(url):
             userID = item['user']['userId']  # 评论者id
             likedCount = item['likedCount']  # 点赞总数
             comment_info = str(userID) + u" " + nickname + u" " + comment + u" " + str(likedCount) + "\r\n"
-            save_to_file(comment_info, u"总有一天你会出现在我身边.txt")
+            # save_to_file(comment_info, u"总有一天你会出现在我身边.txt")   # 将数据保存到本地txt文件 为当前路径下
+            save_database(comment,nickname,userID,likedCount)          # 将数据保存到mysql数据库
 
+#将评论保存数据库
+def save_database(comment,nickname,userID,likedCount):
+    db = pymysql.connect("localhost", "root", "123456", "movie")
+    cursor = db.cursor()
+    sql = "INSERT INTO comment(content,nickname, userId, likedCount)VALUES ('%s', '%s', '%s', '%s')" % \
+          (comment, nickname, userID, likedCount)
+    try:
+        # 执行sql语句
+        cursor.execute(sql)
+        # 执行sql语句
+        db.commit()
+    except:
+        # 发生错误时回滚
+        db.rollback()
+    db.close()
 
 # 将评论写入文本文件
-def save_to_file(list,filename):
-        with codecs.open(filename,'a',encoding='utf-8') as f:
-            f.writelines(list)
+def save_to_file(list, filename):
+    with codecs.open(filename, 'a', encoding='utf-8') as f:
+        f.writelines(list)
 
 
 if __name__ == '__main__':
-    start_time = time.time() # 开始时间
+    start_time = time.time()  # 开始时间
     time.sleep(0.5)
     get_all_comment(url)
     end_time = time.time()  # 结束时间
