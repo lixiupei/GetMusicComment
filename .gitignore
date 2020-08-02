@@ -27,3 +27,4 @@ build/*
 git_commit_tmpl
 
 .DS_Store
+__pycache__
