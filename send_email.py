@@ -1,3 +1,4 @@
+import logging
 import smtplib
 import time
 from email.mime.text import MIMEText
@@ -39,6 +40,6 @@ def send_email(data):
            sender,receivers,message.as_string())
       #退出
       smtpObj.quit()
-      print('success')
+      logging.info("发送完成")
     except smtplib.SMTPException as e:
-      print('error',e) #打印错误
+      logging.error('error',e) #打印错误

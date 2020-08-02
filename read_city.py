@@ -19,7 +19,6 @@ def get_city(city_code):
     db = pymysql.connect("localhost", "root", "123456", "movie")
     cursor = db.cursor()
     sql = "SELECT city FROM city  WHERE city_code = '%s'" %(city_code)
-    print(sql)
     cursor.execute(sql)
     results = cursor.fetchall()
     city =''
