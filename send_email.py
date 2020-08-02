@@ -40,6 +40,6 @@ def send_email(data):
            sender,receivers,message.as_string())
       #退出
       smtpObj.quit()
-      logging.info("发送完成")
+      print("发送完成")
     except smtplib.SMTPException as e:
-      logging.error('error',e) #打印错误
+      print('error',e) #打印错误
