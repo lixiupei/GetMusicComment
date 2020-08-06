@@ -1,10 +1,9 @@
 import pymysql
 
-db = pymysql.connect("localhost", "root", "123456", "movie")
-
 # 获取城市code
 def read_database():
     city_code_arr = []
+    db = pymysql.connect("localhost", "root", "123456", "movie")
     cursor = db.cursor()
     sql = "SELECT * FROM city"
     cursor.execute(sql)
@@ -18,6 +17,7 @@ def read_database():
 
 # 获取城市
 def get_city(city_code):
+    db = pymysql.connect("localhost", "root", "123456", "movie")
     cursor = db.cursor()
     sql = "SELECT city FROM city  WHERE city_code = '%s'" % (city_code)
     cursor.execute(sql)
@@ -31,6 +31,7 @@ def get_city(city_code):
 
 # 删除表中数据
 def delete_table():
+    db = pymysql.connect("localhost", "root", "123456", "movie")
     cursor = db.cursor()
     sql = "truncate table weather"
     try:
@@ -46,13 +47,11 @@ def delete_table():
 
 
 # 保存数据库
-def save_database(date, weather, temperature_highest, temperature_lowest, city, city_code, week):
+def save_database(all_save_data):
+    db = pymysql.connect("localhost", "root", "123456", "movie")
     cursor = db.cursor()
-    sql = "INSERT INTO weather(date,weather, temperature_highest, temperature_lowest,city,city_code,week)VALUES ('%s', '%s', '%s', '%s','%s','%s','%s')" % \
-          (date, weather, temperature_highest, temperature_lowest, city, city_code, week)
+    cursor.executemany('INSERT INTO weather(date,weather, temperature_highest, temperature_lowest,city,city_code,week)VALUES (%s,%s, %s, %s,%s,%s,%s)', all_save_data)
     try:
-        # 执行sql语句
-        cursor.execute(sql)
         # 执行sql语句
         db.commit()
     except:

@@ -71,7 +71,7 @@ def get_data(html_text):
 
 if __name__ == '__main__':
     temp = []
-    all_data = []
+    all_save_data = []
     read_city.delete_table()  # 先将表中数据清楚
     get_code = read_city.read_database()
     num = len(get_code)
@@ -89,7 +89,10 @@ if __name__ == '__main__':
             now = datetime.datetime.now()
             date = now + datetime.timedelta(days=i)
             week = date.weekday() + 1
-            read_city.save_database(date, weather[1], weather[2], weather[3], get_city, get_code[s], week)
+            all_save_data.append((date, weather[1], weather[2], weather[3], get_city, get_code[s], week))
+
             i += 1
         temp.append(get_city)
         s += 1
+    read_city.save_database(all_save_data)
+
