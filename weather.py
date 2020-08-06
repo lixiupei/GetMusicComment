@@ -9,6 +9,7 @@ import http.client
 import read_city
 from bs4 import BeautifulSoup
 
+
 #
 def get_content(url, data=None):
     header = {
@@ -40,7 +41,6 @@ def get_content(url, data=None):
 
 
 def get_data(html_text):
-
     final = []
     bs = BeautifulSoup(html_text, "html.parser")  # 创建BS对象
     body = bs.body
@@ -69,46 +69,27 @@ def get_data(html_text):
 
 
 
-# 保存数据库
-def save_database(date, weather, temperature_highest, temperature_lowest,city,city_code,week):
-    db = pymysql.connect("localhost", "root", "123456", "movie")  # mysql连接依次为 Ip user password databaseName
-    cursor = db.cursor()
-    sql = "INSERT INTO weather(date,weather, temperature_highest, temperature_lowest,city,city_code,week)VALUES ('%s', '%s', '%s', '%s','%s','%s','%s')" % \
-          (date, weather, temperature_highest, temperature_lowest,city,city_code,week)
-    try:
-        # 执行sql语句
-        cursor.execute(sql)
-        # 执行sql语句
-        db.commit()
-    except:
-        # 发生错误时回滚
-        db.rollback()
-    db.close()
-
-
-
 if __name__ == '__main__':
-    temp =[]
-    read_city.delete_table()   # 先将表中数据清楚
+    temp = []
+    all_data = []
+    read_city.delete_table()  # 先将表中数据清楚
     get_code = read_city.read_database()
     num = len(get_code)
     s = 0
     today = datetime.date.today()
     while s < num:
-      print(get_code[s])
-      url = 'http://www.weather.com.cn/weather/'+get_code[s]+'.shtml'
-      html = get_content(url)
-      result = get_data(html)
-      formatted_today = today.strftime('%Y%m%d')
-      i = 0
-      get_city = read_city.get_city(get_code[s])
-      for weather in result:
-         now = datetime.datetime.now()
-         date = now + datetime.timedelta(days=i)
-         week = date.weekday()+1
-         save_database(date,weather[1],weather[2],weather[3],get_city,get_code[s],week)
-         i += 1
-      temp.append(get_city)
-      s +=1
-    data = '涉及更新城市\n'+str(temp)
-    send_email.send_email(data)
+        print(get_code[s])
+        url = 'http://www.weather.com.cn/weather/' + get_code[s] + '.shtml'
+        html = get_content(url)
+        result = get_data(html)
+        formatted_today = today.strftime('%Y%m%d')
+        i = 0
+        get_city = read_city.get_city(get_code[s])
+        for weather in result:
+            now = datetime.datetime.now()
+            date = now + datetime.timedelta(days=i)
+            week = date.weekday() + 1
+            read_city.save_database(date, weather[1], weather[2], weather[3], get_city, get_code[s], week)
+            i += 1
+        temp.append(get_city)
+        s += 1
