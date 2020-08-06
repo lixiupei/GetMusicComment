@@ -1,10 +1,8 @@
-import pymysql
 import requests
 import time
 import random
 import socket
 import datetime
-import send_email
 import http.client
 import read_city
 from bs4 import BeautifulSoup
@@ -45,7 +43,6 @@ def get_data(html_text):
     bs = BeautifulSoup(html_text, "html.parser")  # 创建BS对象
     body = bs.body
     data = body.find('div', attrs={'id': '7d'})
-    # data = body.find('div',{'div':'7d'})
     print(type(data))
     ul = data.find('ul')
     li = ul.find_all('li')
@@ -67,12 +64,10 @@ def get_data(html_text):
         final.append(temp)
     return final
 
-
-
-if __name__ == '__main__':
+def main():
     temp = []
     all_save_data = []
-    read_city.delete_table()  # 先将表中数据清楚
+    read_city.delete_table()  # 先将表中数据清除
     get_code = read_city.read_database()
     num = len(get_code)
     s = 0
@@ -90,9 +85,11 @@ if __name__ == '__main__':
             date = now + datetime.timedelta(days=i)
             week = date.weekday() + 1
             all_save_data.append((date, weather[1], weather[2], weather[3], get_city, get_code[s], week))
-
             i += 1
         temp.append(get_city)
         s += 1
     read_city.save_database(all_save_data)
 
+
+if __name__ == '__main__':
+    main()
